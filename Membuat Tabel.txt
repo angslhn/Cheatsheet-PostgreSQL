@@ -1,0 +1,126 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║                     PostgreSQL — CREATE TABLE                        ║
+║                   Panduan membuat tabel dari nol                     ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  SYNTAX DASAR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  CREATE TABLE nama_tabel (
+      nama_kolom  TIPE_DATA  CONSTRAINT,
+      nama_kolom  TIPE_DATA  CONSTRAINT,
+      ...
+  );
+
+  💡 Setiap kolom dipisah koma, kecuali kolom terakhir.
+  💡 Nama tabel dan kolom sebaiknya huruf kecil + underscore.
+     Contoh: created_at, user_id, is_active (bukan createdAt).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  CONSTRAINTS YANG SERING DIPAKAI
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  PRIMARY KEY     → Identitas unik tiap baris. Otomatis NOT NULL.
+                    Setiap tabel sebaiknya punya tepat 1 primary key.
+
+  NOT NULL        → Kolom wajib diisi, tidak boleh kosong/NULL.
+
+  UNIQUE          → Nilai harus unik di seluruh tabel.
+                    Berbeda dengan PRIMARY KEY — boleh NULL (kecuali
+                    dikombo dengan NOT NULL).
+
+  DEFAULT x       → Nilai otomatis jika kolom tidak diisi saat INSERT.
+                    Contoh: DEFAULT TRUE, DEFAULT NOW(), DEFAULT 0
+
+  CHECK (...)     → Validasi nilai harus memenuhi kondisi tertentu.
+                    Contoh: CHECK (age >= 0 AND age <= 120)
+                            CHECK (harga > 0)
+                            CHECK (status IN ('aktif', 'nonaktif'))
+
+  REFERENCES      → Foreign key — menghubungkan kolom ke tabel lain.
+                    Dibahas lebih detail di cheatsheet RELASI & JOIN.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  CONTOH NYATA — Tabel users
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  CREATE TABLE users (
+      id          BIGINT       GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+      username    VARCHAR(50)  NOT NULL UNIQUE,
+      email       VARCHAR(255) NOT NULL UNIQUE,
+      password    TEXT         NOT NULL,
+      age         SMALLINT     CHECK (age >= 0 AND age <= 120),
+      is_active   BOOLEAN      DEFAULT TRUE,
+      created_at  TIMESTAMPTZ  DEFAULT NOW()
+  );
+
+  Penjelasan tiap kolom:
+  ├── id         → auto-increment, primary key, tidak bisa NULL
+  ├── username   → maks 50 karakter, wajib diisi, harus unik
+  ├── email      → maks 255 karakter, wajib diisi, harus unik
+  ├── password   → teks bebas, wajib diisi
+  ├── age        → angka kecil, harus antara 0–120 (boleh NULL)
+  ├── is_active  → boolean, otomatis TRUE saat data dibuat
+  └── created_at → timestamp otomatis saat data diinsert
+
+  💡 age tidak diberi NOT NULL — artinya boleh kosong (NULL).
+     Kalau wajib diisi, tambahkan NOT NULL:
+     age SMALLINT NOT NULL CHECK (age >= 0 AND age <= 120)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  CONTOH NYATA — Tabel products
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  CREATE TABLE products (
+      id          BIGINT         GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+      nama        VARCHAR(200)   NOT NULL,
+      deskripsi   TEXT,
+      harga       NUMERIC(12, 2) NOT NULL CHECK (harga > 0),
+      stok        INTEGER        NOT NULL DEFAULT 0 CHECK (stok >= 0),
+      is_active   BOOLEAN        DEFAULT TRUE,
+      created_at  TIMESTAMPTZ    DEFAULT NOW()
+  );
+
+  Penjelasan:
+  ├── deskripsi  → tidak ada NOT NULL, boleh kosong
+  ├── harga      → wajib diisi, harus lebih dari 0
+  └── stok       → wajib diisi, default 0, tidak boleh negatif
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  LIHAT & CEK TABEL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  \dt                  → lihat semua tabel di database saat ini
+  \d nama_tabel        → lihat struktur tabel (kolom, tipe, constraint)
+  \d+ nama_tabel       → versi lebih detail (termasuk ukuran, storage)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  HAPUS TABEL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  DROP TABLE users;
+
+  DROP TABLE IF EXISTS users;
+  └── Tidak error kalau tabelnya memang tidak ada.
+      Lebih aman dipakai di script/migration.
+
+  DROP TABLE users CASCADE;
+  └── Hapus tabel beserta semua tabel lain yang punya
+      foreign key ke tabel ini.
+      ⚠️  Hati-hati — efeknya berantai!
+
+  ⚠️  DROP TABLE langsung hapus semua data secara permanen.
+      Tidak ada UNDO. Pastikan sudah benar sebelum eksekusi!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  TIPS & KEBIASAAN BAIK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ✅  Selalu pakai id sebagai primary key di setiap tabel.
+  ✅  Selalu tambahkan created_at TIMESTAMPTZ DEFAULT NOW().
+  ✅  Nama tabel pakai bentuk jamak: users, products, orders.
+  ✅  Nama kolom pakai snake_case: first_name, created_at.
+  ✅  Pakai IF EXISTS saat DROP untuk menghindari error di script.
+  ❌  Jangan pakai nama reserved word sebagai nama kolom/tabel:
+      user, order, select, table → pakai users, orders, dll.
