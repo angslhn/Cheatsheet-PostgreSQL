@@ -1,0 +1,212 @@
+╔═══════════════════════════════════════════════════════════════╗
+║              PostgreSQL — Cheat Sheet Tipe Data               ║
+╚═══════════════════════════════════════════════════════════════╝
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  🔢 NUMERIK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- SMALLINT
+  Ukuran : 2 bytes
+  Range  : -32,768 s/d 32,767
+  Saran  : Angka kecil, hemat storage tapi range terbatas.
+           Cocok untuk: umur, jumlah item kecil, kode status.
+
+- INTEGER / INT
+  Ukuran : 4 bytes
+  Range  : -2,147,483,648 s/d 2,147,483,647
+  Saran  : Pilihan DEFAULT untuk angka bulat. Cukup untuk hampir
+           semua kasus umum. Gunakan ini kalau tidak ada alasan
+           khusus pakai yang lain.
+
+- BIGINT
+  Ukuran : 8 bytes
+  Range  : -9.2 quintillion s/d 9.2 quintillion
+  Saran  : Untuk angka yang bisa sangat besar.
+           Cocok untuk: ID skala besar, view count, Unix timestamp.
+
+- NUMERIC(p, s) / DECIMAL(p, s)
+  Ukuran : Variable (tergantung presisi)
+  Ket    : p = total digit, s = digit di belakang koma
+  Saran  : Presisi EXACT, tidak ada floating point error.
+           ⚠️  WAJIB untuk uang & harga! Jangan pernah pakai
+           FLOAT/REAL untuk uang — bisa terjadi error pembulatan.
+           Contoh: 0.1 + 0.2 = 0.30000000000000004 di FLOAT!
+           Contoh pakai: harga NUMERIC(12, 2)
+
+- REAL
+  Ukuran : 4 bytes
+  Presisi: ~6 digit
+  Saran  : Angka desimal yang boleh tidak presisi exact.
+           Cocok untuk: perhitungan saintifik, data sensor.
+           ❌ Jangan untuk uang!
+
+- DOUBLE PRECISION
+  Ukuran : 8 bytes
+  Presisi: ~15 digit
+  Saran  : Lebih akurat dari REAL, tapi masih bisa floating error.
+           Cocok untuk: koordinat GPS, kalkulasi ilmiah.
+           ❌ Jangan untuk uang!
+
+- SERIAL ← LAMA, hindari
+- BIGSERIAL ← LAMA, hindari
+  Saran  : Ini shorthand auto-increment lama. Masih valid tapi
+           tidak disarankan di PostgreSQL modern.
+           ✅ Gantinya pakai:
+           id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY
+           id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  🔤 TEKS / STRING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+- CHAR(n)
+  Saran  : Panjang FIXED — selalu n karakter, dipadding spasi
+           jika kurang. Hampir tidak pernah dipakai.
+           Cocok untuk: kode negara CHAR(2) → 'ID', 'US', 'JP'
+
+- VARCHAR(n)
+  Saran  : Panjang maksimal n karakter. Pilihan paling umum.
+           Cocok untuk: username VARCHAR(50), email VARCHAR(255),
+           judul VARCHAR(200), nomor telepon VARCHAR(20).
+
+- TEXT
+  Saran  : Panjang BEBAS, tidak ada batas.
+           Di PostgreSQL, performa TEXT = VARCHAR — tidak ada
+           perbedaan kecepatan sama sekali!
+           Cocok untuk: isi pesan, bio, deskripsi, body artikel.
+           💡 Kalau tidak tahu batasnya, pakai TEXT saja.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ✅ BOOLEAN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+- BOOLEAN / BOOL
+  Nilai  : TRUE / FALSE / NULL
+  Saran  : Selalu beri DEFAULT yang masuk akal.
+           Contoh:
+           is_active   BOOLEAN DEFAULT TRUE
+           is_verified BOOLEAN DEFAULT FALSE
+           is_deleted  BOOLEAN DEFAULT FALSE
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  📅 TANGGAL & WAKTU
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+- DATE
+  Format : 2026-05-26
+  Saran  : Tanggal saja, tanpa waktu.
+           Cocok untuk: tanggal lahir, tanggal jatuh tempo.
+
+- TIME
+  Format : 14:30:00
+  Saran  : Waktu saja, tanpa tanggal. Jarang dipakai sendiri.
+
+- TIMESTAMP
+  Format : 2026-05-26 14:30:00
+  Saran  : Tanggal + waktu, TANPA timezone.
+           ⚠️  Hati-hati — jika server pindah timezone, data
+           bisa jadi ambigu. Hindari untuk production.
+
+- TIMESTAMPTZ ← Disarankan untuk production
+  Format : 2026-05-26 14:30:00+07
+  Saran  : Tanggal + waktu, DENGAN timezone. Disimpan dalam UTC,
+           ditampilkan sesuai timezone lokal server/client.
+           ✅ Selalu pakai ini! Aman saat deploy ke cloud atau
+           server pindah timezone.
+           Contoh:
+           created_at TIMESTAMPTZ DEFAULT NOW()
+           updated_at TIMESTAMPTZ DEFAULT NOW()
+
+- INTERVAL
+  Contoh : '2 hours', '30 days', '1 year 3 months'
+  Saran  : Durasi / selisih waktu. Bisa dioperasikan langsung
+           dengan TIMESTAMP.
+           Contoh pakai:
+           expired_at = created_at + INTERVAL '7 days'
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  🔑 UUID
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+- UUID
+  Contoh : 550e8400-e29b-41d4-a716-446655440000
+  Saran  : ID unik secara global — tidak bisa ditebak urutannya.
+           Lebih aman dari integer ID karena tidak sequential.
+           Cocok untuk: user_id, message_id, conversation_id,
+           token reset password.
+           Contoh pakai:
+           id UUID DEFAULT gen_random_uuid() PRIMARY KEY
+
+⚖️  UUID vs Integer:
+      UUID  → lebih aman, bagus untuk distributed system,
+              tidak bisa ditebak
+      INT   → lebih cepat query & join, ukuran lebih kecil
+      Untuk messaging app: UUID disarankan untuk user & message.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  📦 JSON
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- JSON
+  Saran  : Disimpan as-is sebagai teks, hanya validasi format.
+           Tidak bisa di-index. Hampir tidak ada alasan pakai ini.
+           ❌ Hindari — pakai JSONB.
+
+- JSONB ← DISARANKAN
+  Saran  : Disimpan dalam format binary. Bisa di-index, lebih
+           cepat untuk query, mendukung operator JSON lengkap.
+           ✅ Selalu pakai JSONB kecuali ada alasan sangat khusus.
+           Cocok untuk: settings, metadata, preferences, config.
+           Contoh:
+           settings JSONB DEFAULT '{}'
+           metadata JSONB
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  🎯 LAINNYA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- ENUM
+  Saran  : Nilai dari daftar terbatas yang sudah ditentukan.
+           Harus buat tipe dulu sebelum dipakai di tabel.
+           Cocok untuk: status pesan, role user, jenis notifikasi.
+           ⚠️  Menambah nilai baru butuh ALTER TYPE — kurang
+           fleksibel. Alternatif: pakai VARCHAR + CHECK constraint.
+           Contoh:
+           CREATE TYPE status_msg AS ENUM ('sent','delivered','read');
+           status STATUS_MSG DEFAULT 'sent'
+
+- ARRAY
+  Saran  : Menyimpan array nilai. Notasi: TEXT[], INTEGER[].
+           ⚠️  Susah di-query dan di-index. Kalau relasinya
+           kompleks, lebih baik buat tabel terpisah.
+           Cocok untuk: tags sederhana, daftar kecil yang jarang
+           di-filter.
+
+- BYTEA
+  Saran  : Binary data mentah (file, gambar, dll).
+           ⚠️  Untuk production, simpan file di object storage
+           (S3, Cloudflare R2, dll) dan simpan URL-nya saja
+           sebagai TEXT di database.
+
+- INET
+  Saran  : Alamat IP (IPv4 & IPv6). Mendukung operasi jaringan.
+           Cocok untuk: log IP login user, audit trail,
+           rate limiting per IP.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ⚡ QUICK REFERENCE — PILIH TIPE YANG TEPAT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Kebutuhan                  → Tipe yang dipakai
+  ─────────────────────────────────────────────────────────────
+  ID auto-increment          → BIGINT GENERATED ALWAYS AS IDENTITY
+  ID global unik             → UUID DEFAULT gen_random_uuid()
+  Nama, username             → VARCHAR(n)
+  Konten panjang (pesan,bio) → TEXT
+  Harga, saldo, uang         → NUMERIC(12, 2)
+  Status true/false          → BOOLEAN DEFAULT FALSE
+  Waktu dengan timezone      → TIMESTAMPTZ DEFAULT NOW()
+  Tanggal lahir              → DATE
+  Data fleksibel / config    → JSONB DEFAULT '{}'
+  Pilihan terbatas           → ENUM (buat tipe dulu)
+  Kode negara / kode fixed   → CHAR(2)
+  Alamat IP                  → INET
+  ─────────────────────────────────────────────────────────────
