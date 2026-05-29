@@ -1,0 +1,111 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║                    PostgreSQL — Navigasi Dasar                       ║
+║            Perintah dasar untuk orientasi di dalam psql              ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  VERSI & INFO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  SELECT version();
+  └── Lihat versi PostgreSQL yang sedang berjalan.
+
+  SELECT current_database();
+  └── Cek kamu sedang berada di database mana.
+
+  SELECT current_user;
+  └── Cek kamu login sebagai user apa.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  DATABASE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  \list  atau  \l
+  └── Lihat semua database yang ada.
+
+  CREATE DATABASE example_db;
+  └── Buat database baru bernama example_db.
+
+  \c example_db
+  └── Pindah / masuk ke database example_db.
+      Prompt akan berubah: postgres=# → example_db=#
+
+  DROP DATABASE example_db;
+  └── Hapus database. ⚠️  Permanen — tidak bisa di-undo!
+
+  DROP DATABASE IF EXISTS example_db;
+  └── Hapus database, tidak error kalau tidak ada.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  TABEL & SCHEMA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  \dt
+  └── Lihat semua tabel di database saat ini.
+
+  \dt *.*
+  └── Lihat semua tabel dari semua schema.
+
+  \d nama_tabel
+  └── Lihat detail struktur tabel: kolom, tipe data, constraint.
+
+  \d+ nama_tabel
+  └── Versi lebih detail — termasuk ukuran dan storage info.
+
+  \dn
+  └── Lihat semua schema yang ada di database saat ini.
+      Schema default PostgreSQL adalah: public
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  USER & ROLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  \du
+  └── Lihat semua user / role beserta atribut dan hak aksesnya.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  BANTUAN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  \?
+  └── Lihat semua backslash command yang tersedia di psql.
+      Contoh: \c, \dt, \d, \du, \dn, dll.
+
+  \h
+  └── Lihat semua SQL command yang tersedia.
+
+  \h CREATE TABLE
+  └── Lihat syntax lengkap untuk perintah SQL tertentu.
+      Bisa dipakai untuk command apapun: \h ALTER TABLE, \h DROP, dll.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  KELUAR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  \q
+  └── Keluar dari psql dan kembali ke terminal.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  RINGKASAN CEPAT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Perintah                      Fungsi
+  ──────────────────────────────────────────────────────────────────────
+  SELECT version();           → Versi PostgreSQL
+  SELECT current_database();  → Database aktif saat ini
+  SELECT current_user;        → User aktif saat ini
+  \l                          → List semua database
+  CREATE DATABASE nama;       → Buat database baru
+  \c nama                     → Masuk ke database
+  \dt                         → List semua tabel
+  \d nama_tabel               → Struktur tabel
+  \dn                         → List semua schema
+  \du                         → List semua user/role
+  \?                          → Bantuan backslash command
+  \h                          → Bantuan SQL command
+  \q                          → Keluar dari psql
+  ──────────────────────────────────────────────────────────────────────
+
+  💡 Backslash command (\l, \dt, dll) adalah perintah khusus psql —
+     tidak butuh titik koma di akhir.
+  💡 SQL command (SELECT, CREATE, dll) selalu diakhiri titik koma (;).
