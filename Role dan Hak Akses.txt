@@ -1,0 +1,150 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║                PostgreSQL — User, Role & Hak Akses                   ║
+║                Manajemen pengguna dan izin database                  ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+  💡 Di PostgreSQL, USER dan ROLE adalah hal yang sama.
+     CREATE USER = CREATE ROLE WITH LOGIN (otomatis bisa login).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  KELOLA USER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  -- Buat user baru
+  CREATE USER nama_user WITH PASSWORD 'password123';
+
+  -- Buat user tanpa password (tidak bisa login dari luar)
+  CREATE USER nama_user;
+
+  -- Lihat semua user dan atributnya
+  \du
+
+  -- Ganti password user
+  ALTER USER nama_user WITH PASSWORD 'password_baru';
+
+  -- Hapus user
+  DROP USER nama_user;
+
+  -- Hapus user (aman, tidak error kalau tidak ada)
+  DROP USER IF EXISTS nama_user;
+
+  ⚠️  User tidak bisa dihapus kalau masih punya objek (tabel, dll).
+      Pindahkan dulu kepemilikan objeknya sebelum DROP USER.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ATRIBUT USER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  -- Jadikan superuser
+  ALTER USER nama_user WITH SUPERUSER;
+
+  -- Cabut superuser
+  ALTER USER nama_user WITH NOSUPERUSER;
+
+  -- Beri izin membuat database
+  ALTER USER nama_user WITH CREATEDB;
+
+  -- Cabut izin membuat database
+  ALTER USER nama_user WITH NOCREATEDB;
+
+  -- Beri izin membuat role/user baru
+  ALTER USER nama_user WITH CREATEROLE;
+
+  -- Nonaktifkan login user (tanpa hapus)
+  ALTER USER nama_user WITH NOLOGIN;
+
+  -- Aktifkan kembali login user
+  ALTER USER nama_user WITH LOGIN;
+
+  💡 Atribut bisa digabung dalam satu perintah:
+     ALTER USER nama_user WITH SUPERUSER CREATEDB CREATEROLE;
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  GRANT — Beri Izin
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Urutan GRANT yang benar (harus dilakukan bertahap):
+
+  -- 1. Izin koneksi ke database
+  GRANT CONNECT ON DATABASE example_db TO nama_user;
+
+  -- 2. Izin akses schema
+  GRANT USAGE ON SCHEMA public TO nama_user;
+
+  -- 3. Izin ke tabel tertentu
+  GRANT SELECT ON TABLE users TO nama_user;                  ← baca saja
+  GRANT SELECT, INSERT ON TABLE users TO nama_user;          ← baca + tambah
+  GRANT SELECT, INSERT, UPDATE ON TABLE users TO nama_user;  ← baca + tambah + ubah
+  GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE users TO nama_user; ← penuh
+
+  -- Izin ke semua tabel dalam schema sekaligus
+  GRANT SELECT ON ALL TABLES IN SCHEMA public TO nama_user;
+  GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO nama_user;
+
+  -- Izin otomatis untuk tabel yang dibuat di masa depan
+  ALTER DEFAULT PRIVILEGES IN SCHEMA public
+      GRANT SELECT ON TABLES TO nama_user;
+
+  💡 Prinsip "least privilege" — beri izin sesedikit mungkin.
+     Jangan langsung GRANT ALL kecuali memang diperlukan.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  REVOKE — Cabut Izin
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  -- Cabut izin tabel tertentu
+  REVOKE SELECT ON TABLE users FROM nama_user;
+  REVOKE ALL PRIVILEGES ON TABLE users FROM nama_user;
+
+  -- Cabut izin semua tabel
+  REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA public FROM nama_user;
+
+  -- Cabut izin koneksi ke database
+  REVOKE CONNECT ON DATABASE example_db FROM nama_user;
+
+  💡 REVOKE adalah kebalikan GRANT — syntax-nya mirip,
+     cuma ganti TO dengan FROM.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  RESET PASSWORD (Kalau Lupa)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Kalau lupa password user postgres (superuser), ikuti langkah ini:
+
+  1. Buka file pg_hba.conf
+     └── Windows: C:\Program Files\PostgreSQL\17\data\pg_hba.conf
+
+  2. Ubah metode auth sementara jadi trust
+     └── Cari baris: host  all  all  127.0.0.1/32  scram-sha-256
+         Ganti jadi: host  all  all  127.0.0.1/32  trust
+
+  3. Restart service PostgreSQL
+     └── Windows: Buka Services → cari postgresql-x64-17 → Restart
+
+  4. Masuk psql tanpa password, lalu ganti password
+     └── ALTER USER postgres WITH PASSWORD 'password_baru';
+
+  5. Kembalikan pg_hba.conf ke scram-sha-256, lalu restart lagi
+
+  ⚠️  Jangan lupa dikembalikan! Method "trust" artinya siapapun
+      bisa masuk tanpa password — sangat berbahaya di production!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  RINGKASAN CEPAT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Perintah                                          Fungsi
+  ──────────────────────────────────────────────────────────────────────
+  CREATE USER x WITH PASSWORD 'y'              → Buat user baru
+  ALTER USER x WITH PASSWORD 'y'               → Ganti password
+  DROP USER x                                  → Hapus user
+  ALTER USER x WITH SUPERUSER                  → Jadikan superuser
+  ALTER USER x WITH NOSUPERUSER                → Cabut superuser
+  ALTER USER x WITH CREATEDB                   → Izin buat database
+  ALTER USER x WITH NOLOGIN                    → Nonaktifkan login
+  GRANT CONNECT ON DATABASE db TO x            → Izin koneksi
+  GRANT USAGE ON SCHEMA s TO x                 → Izin akses schema
+  GRANT SELECT ON TABLE t TO x                 → Izin baca tabel
+  GRANT ALL PRIVILEGES ON TABLE t TO x         → Semua izin tabel
+  REVOKE ALL PRIVILEGES ON TABLE t FROM x      → Cabut semua izin
+  \du                                          → Lihat semua user
+  ──────────────────────────────────────────────────────────────────────
