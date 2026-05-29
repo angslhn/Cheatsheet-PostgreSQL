@@ -143,7 +143,6 @@
       INT   → lebih cepat query & join, ukuran lebih kecil
       Untuk messaging app: UUID disarankan untuk user & message.
 
-
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   📦 JSON
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
