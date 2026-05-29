@@ -6,7 +6,6 @@
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   SYNTAX DASAR
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
   CREATE TABLE nama_tabel (
       nama_kolom  TIPE_DATA  CONSTRAINT,
       nama_kolom  TIPE_DATA  CONSTRAINT,
@@ -20,7 +19,6 @@
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   CONSTRAINTS YANG SERING DIPAKAI
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
   PRIMARY KEY     → Identitas unik tiap baris. Otomatis NOT NULL.
                     Setiap tabel sebaiknya punya tepat 1 primary key.
 
@@ -44,7 +42,6 @@
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   CONTOH NYATA — Tabel users
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
   CREATE TABLE users (
       id          BIGINT       GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
       username    VARCHAR(50)  NOT NULL UNIQUE,
@@ -71,7 +68,6 @@
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   CONTOH NYATA — Tabel products
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
   CREATE TABLE products (
       id          BIGINT         GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
       nama        VARCHAR(200)   NOT NULL,
@@ -90,7 +86,6 @@
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   LIHAT & CEK TABEL
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
   \dt                  → lihat semua tabel di database saat ini
   \d nama_tabel        → lihat struktur tabel (kolom, tipe, constraint)
   \d+ nama_tabel       → versi lebih detail (termasuk ukuran, storage)
@@ -98,7 +93,6 @@
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   HAPUS TABEL
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
   DROP TABLE users;
 
   DROP TABLE IF EXISTS users;
@@ -116,7 +110,6 @@
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   TIPS & KEBIASAAN BAIK
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
   ✅  Selalu pakai id sebagai primary key di setiap tabel.
   ✅  Selalu tambahkan created_at TIMESTAMPTZ DEFAULT NOW().
   ✅  Nama tabel pakai bentuk jamak: users, products, orders.
