@@ -1,0 +1,140 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║                       PostgreSQL — ALTER TABLE                       ║
+║                  Panduan mengedit tabel yang sudah ada               ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  SYNTAX DASAR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ALTER TABLE nama_tabel [aksi];
+
+  💡 ALTER TABLE tidak menghapus data yang sudah ada,
+     kecuali kamu DROP COLUMN — itu menghapus kolom beserta isinya.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  KOLOM — Tambah, Hapus, Ubah
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  -- Tambah kolom baru
+  ALTER TABLE users ADD COLUMN phone VARCHAR(20);
+
+  -- Tambah kolom dengan default & constraint
+  ALTER TABLE users ADD COLUMN is_verified BOOLEAN NOT NULL DEFAULT FALSE;
+
+  -- Hapus kolom
+  ALTER TABLE users DROP COLUMN phone;
+
+  -- Hapus kolom (aman, tidak error kalau kolom tidak ada)
+  ALTER TABLE users DROP COLUMN IF EXISTS phone;
+
+  ⚠️  DROP COLUMN menghapus kolom beserta seluruh datanya — permanen!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  TIPE DATA — Ganti Tipe Kolom
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  -- Ganti tipe data kolom
+  ALTER TABLE users ALTER COLUMN age TYPE INTEGER;
+
+  -- Ganti tipe + konversi eksplisit (kalau tipenya tidak kompatibel)
+  ALTER TABLE users ALTER COLUMN age TYPE BIGINT USING age::BIGINT;
+
+  💡 Tidak semua konversi otomatis bisa dilakukan. Kalau gagal,
+     pakai USING untuk kasih tahu PostgreSQL cara konversinya.
+     Contoh: VARCHAR ke INTEGER butuh USING kolom::INTEGER
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  NOT NULL — Tambah & Hapus
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  -- Tambah constraint NOT NULL
+  ALTER TABLE users ALTER COLUMN phone SET NOT NULL;
+
+  -- Hapus constraint NOT NULL (kolom jadi boleh NULL)
+  ALTER TABLE users ALTER COLUMN phone DROP NOT NULL;
+
+  ⚠️  Kalau kamu SET NOT NULL pada kolom yang sudah ada data NULL,
+      PostgreSQL akan error. Isi dulu data NULL-nya sebelum set:
+      UPDATE users SET phone = '' WHERE phone IS NULL;
+      Baru kemudian:
+      ALTER TABLE users ALTER COLUMN phone SET NOT NULL;
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  DEFAULT — Tambah & Hapus
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  -- Tambah nilai default
+  ALTER TABLE users ALTER COLUMN is_active SET DEFAULT TRUE;
+
+  -- Hapus nilai default
+  ALTER TABLE users ALTER COLUMN is_active DROP DEFAULT;
+
+  💡 Mengubah DEFAULT tidak mengubah data yang sudah ada —
+     hanya berlaku untuk INSERT berikutnya.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  CONSTRAINT — Tambah & Hapus
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  -- Tambah constraint UNIQUE
+  ALTER TABLE users ADD CONSTRAINT uq_users_phone UNIQUE (phone);
+
+  -- Tambah constraint CHECK
+  ALTER TABLE products ADD CONSTRAINT chk_harga CHECK (harga > 0);
+
+  -- Tambah PRIMARY KEY (kalau belum ada)
+  ALTER TABLE users ADD PRIMARY KEY (id);
+
+  -- Hapus constraint (butuh nama constraint-nya)
+  ALTER TABLE users DROP CONSTRAINT uq_users_phone;
+  ALTER TABLE products DROP CONSTRAINT chk_harga;
+
+  💡 Nama constraint bisa dicek lewat:
+     \d nama_tabel  → lihat semua constraint dan namanya
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  RENAME — Ganti Nama Kolom & Tabel
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  -- Ganti nama kolom
+  ALTER TABLE users RENAME COLUMN username TO nama_pengguna;
+
+  -- Ganti nama tabel
+  ALTER TABLE users RENAME TO pengguna;
+
+  💡 RENAME aman — tidak mengubah data sama sekali.
+     Tapi pastikan update juga semua query/kode yang
+     menggunakan nama lama!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  RINGKASAN SEMUA PERINTAH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Aksi                              Perintah
+  ────────────────────────────────────────────────────────────────────
+  Tambah kolom                    → ADD COLUMN nama TIPE
+  Hapus kolom                     → DROP COLUMN nama
+  Ganti tipe data                 → ALTER COLUMN nama TYPE tipe_baru
+  Tambah NOT NULL                 → ALTER COLUMN nama SET NOT NULL
+  Hapus NOT NULL                  → ALTER COLUMN nama DROP NOT NULL
+  Tambah DEFAULT                  → ALTER COLUMN nama SET DEFAULT x
+  Hapus DEFAULT                   → ALTER COLUMN nama DROP DEFAULT
+  Tambah UNIQUE                   → ADD CONSTRAINT nama UNIQUE (kolom)
+  Tambah CHECK                    → ADD CONSTRAINT nama CHECK (kondisi)
+  Hapus constraint                → DROP CONSTRAINT nama_constraint
+  Ganti nama kolom                → RENAME COLUMN lama TO baru
+  Ganti nama tabel                → RENAME TO nama_baru
+  ────────────────────────────────────────────────────────────────────
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  TIPS & KEBIASAAN BAIK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ✅  Selalu beri nama constraint secara eksplisit (jangan biarkan
+      PostgreSQL auto-generate nama) agar mudah di-drop nanti.
+      Konvensi nama: uq_tabel_kolom, chk_tabel_kolom, fk_tabel_kolom
+
+  ✅  Sebelum DROP COLUMN di production, pastikan kolom tidak
+      dipakai di kode aplikasi manapun.
+
+  ✅  Kalau mau SET NOT NULL pada kolom yang sudah ada data,
+      selalu isi NULL-nya dulu dengan UPDATE.
+
+  ✅  Gunakan IF EXISTS untuk operasi yang mungkin dijalankan
+      berulang (misal di migration script).
+
+  ❌  Jangan langsung ALTER TABLE di production tanpa backup.
+      Selalu test dulu di environment development/staging.
